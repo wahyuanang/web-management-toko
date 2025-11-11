@@ -5,12 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Notifications\NewAssignmentNotification;
 
 class Assignment extends Model
 {
     protected $fillable = [
         'title',
         'description',
+        'lokasi_tujuan',
         'assigned_to',
         'product_id',
         'qty_target',
@@ -21,8 +23,22 @@ class Assignment extends Model
     ];
 
     protected $casts = [
-        'deadline' => 'date',
+        'deadline' => 'datetime',
     ];
+
+    /**
+     * Boot method untuk auto trigger events
+     */
+    protected static function booted(): void
+    {
+        // Trigger notifikasi saat assignment baru dibuat
+        static::created(function (Assignment $assignment) {
+            $karyawan = $assignment->assignedUser;
+            if ($karyawan) {
+                $karyawan->notify(new NewAssignmentNotification($assignment));
+            }
+        });
+    }
 
     /**
      * Assignment assigned to User (karyawan)

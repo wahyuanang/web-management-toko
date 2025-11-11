@@ -33,17 +33,43 @@ class AssignmentsTable
                     ->label('Target Qty')
                     ->sortable(),
 
+                TextColumn::make('total_dikirim')
+                    ->label('Total Terkirim')
+                    ->getStateUsing(fn ($record) => $record->total_dikirim)
+                    ->badge()
+                    ->color(fn ($record) => $record->total_dikirim >= $record->qty_target ? 'success' : 'warning'),
+
+                TextColumn::make('progress')
+                    ->label('Progress')
+                    ->getStateUsing(fn ($record) => number_format($record->progress, 1) . '%')
+                    ->badge()
+                    ->color(function ($record) {
+                        $progress = $record->progress;
+                        if ($progress >= 100) return 'success';
+                        if ($progress >= 50) return 'warning';
+                        return 'danger';
+                    }),
+
                 TextColumn::make('priority')
                     ->label('Prioritas')
                     ->badge(),
 
                 TextColumn::make('status')
                     ->label('Status')
-                    ->badge(),
+                    ->badge()
+                    ->color(function ($state) {
+                        return match($state) {
+                            'done' => 'success',
+                            'in_progress' => 'warning',
+                            'pending' => 'gray',
+                            'cancelled' => 'danger',
+                            default => 'gray',
+                        };
+                    }),
 
                 TextColumn::make('deadline')
                     ->label('Batas Waktu')
-                    ->date()
+                    ->dateTime('d M Y H:i')
                     ->sortable(),
 
                 TextColumn::make('createdBy.name')

@@ -4,56 +4,120 @@
 @section('page-title', 'Laporan Saya')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
     <!-- Header & Create Button -->
-    <div class="flex justify-between items-center">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-            <h2 class="text-2xl font-bold text-gray-900">Daftar Laporan</h2>
-            <p class="text-gray-600 mt-1">Kelola semua laporan pengiriman Anda</p>
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Daftar Laporan</h2>
+            <p class="text-sm sm:text-base text-gray-600 mt-1">Kelola semua laporan pengiriman Anda</p>
         </div>
         <a href="{{ route('karyawan.reports.create') }}"
-           class="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors">
+           class="inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors text-sm sm:text-base whitespace-nowrap">
             <i class="fas fa-plus mr-2"></i>Buat Laporan Baru
         </a>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-        <form method="GET" action="{{ route('karyawan.reports.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200">
+        <form method="GET" action="{{ route('karyawan.reports.index') }}" class="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Cari Laporan</label>
                 <input type="text"
                        name="search"
                        value="{{ request('search') }}"
                        placeholder="Cari..."
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                       class="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Dari Tanggal</label>
                 <input type="date"
                        name="start_date"
                        value="{{ request('start_date') }}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                       class="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Sampai Tanggal</label>
                 <input type="date"
                        name="end_date"
                        value="{{ request('end_date') }}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                       class="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             </div>
-            <div class="flex items-end">
+            <div class="flex items-end sm:col-span-2 lg:col-span-1">
                 <button type="submit"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base">
                     <i class="fas fa-search mr-2"></i>Filter
                 </button>
             </div>
         </form>
     </div>
 
-    <!-- Reports Table -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div class="overflow-x-auto">
+    <!-- Reports List -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <!-- Mobile Card View (Hidden on md and up) -->
+        <div class="md:hidden divide-y divide-gray-200">
+            @forelse($reports as $report)
+                <div class="p-4 hover:bg-gray-50 transition-colors">
+                    <div class="space-y-3">
+                        <!-- Title & Note -->
+                        <div>
+                            <h3 class="font-semibold text-gray-900 text-base">{{ $report->assignment->title }}</h3>
+                            @if($report->catatan)
+                                <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ $report->catatan }}</p>
+                            @endif
+                        </div>
+                        
+                        <!-- Info Grid -->
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <span class="text-gray-500 block">Jumlah</span>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                                    {{ $report->jumlah_barang_dikirim }} unit
+                                </span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block">Waktu</span>
+                                <span class="text-gray-900 font-medium block">{{ $report->waktu_laporan->format('d M Y') }}</span>
+                                <span class="text-xs text-gray-500">{{ $report->waktu_laporan->format('H:i') }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Location -->
+                        <div class="text-sm">
+                            <span class="text-gray-500 block">Lokasi</span>
+                            <span class="text-gray-900">{{ Str::limit($report->lokasi, 50) }}</span>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="flex flex-wrap gap-2 pt-2">
+                            <a href="{{ route('karyawan.reports.show', $report) }}"
+                               class="flex-1 min-w-[90px] inline-flex items-center justify-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium">
+                                <i class="fas fa-eye mr-1"></i>Lihat
+                            </a>
+                            <a href="{{ route('karyawan.reports.edit', $report) }}"
+                               class="flex-1 min-w-[90px] inline-flex items-center justify-center px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors text-sm font-medium">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </a>
+                            <button onclick="confirmDelete({{ $report->id }})"
+                                    class="flex-1 min-w-[90px] inline-flex items-center justify-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium">
+                                <i class="fas fa-trash mr-1"></i>Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="p-8 text-center text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-3 text-gray-400"></i>
+                    <p class="text-base mb-4">Belum ada laporan yang dibuat</p>
+                    <a href="{{ route('karyawan.reports.create') }}"
+                       class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm">
+                        <i class="fas fa-plus mr-2"></i>Buat Laporan Pertama
+                    </a>
+                </div>
+            @endforelse
+        </div>
+
+        <!-- Desktop Table View (Hidden on mobile) -->
+        <div class="hidden md:block overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -118,7 +182,7 @@
 
         <!-- Pagination -->
         @if($reports->hasPages())
-            <div class="px-6 py-4 border-t border-gray-200">
+            <div class="px-4 sm:px-6 py-4 border-t border-gray-200">
                 {{ $reports->links() }}
             </div>
         @endif
@@ -126,28 +190,28 @@
 </div>
 
 <!-- Delete Modal -->
-<div id="deleteModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+<div id="deleteModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 p-4">
+    <div class="relative top-10 sm:top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-lg bg-white">
         <div class="mt-3 text-center">
             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
                 <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
             </div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Hapus Laporan</h3>
-            <div class="mt-2 px-7 py-3">
+            <h3 class="text-base sm:text-lg leading-6 font-medium text-gray-900 mt-4">Hapus Laporan</h3>
+            <div class="mt-2 px-4 sm:px-7 py-3">
                 <p class="text-sm text-gray-500">
                     Apakah Anda yakin ingin menghapus laporan ini? Tindakan ini tidak dapat dibatalkan.
                 </p>
             </div>
-            <div class="flex space-x-4 px-4 py-3">
+            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 px-4 py-3">
                 <button onclick="closeDeleteModal()"
-                        class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+                        class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors text-sm sm:text-base">
                     Batal
                 </button>
                 <form id="deleteForm" method="POST" class="flex-1">
                     @csrf
                     @method('DELETE')
                     <button type="submit"
-                            class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                            class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base">
                         Hapus
                     </button>
                 </form>

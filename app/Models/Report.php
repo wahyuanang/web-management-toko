@@ -11,6 +11,8 @@ class Report extends Model
         'user_id',
         'assignment_id',
         'jumlah_barang_dikirim',
+        'harga_per_pcs',
+        'total_harga',
         'lokasi',
         'catatan',
         'foto_bukti',
@@ -43,6 +45,21 @@ class Report extends Model
      */
     protected static function booted(): void
     {
+        // Auto calculate total_harga before creating/updating
+        static::creating(function (Report $report) {
+            if (!$report->harga_per_pcs && $report->assignment && $report->assignment->product) {
+                $report->harga_per_pcs = $report->assignment->product->harga_per_pcs;
+            }
+            $report->total_harga = $report->jumlah_barang_dikirim * $report->harga_per_pcs;
+        });
+
+        static::updating(function (Report $report) {
+            if (!$report->harga_per_pcs && $report->assignment && $report->assignment->product) {
+                $report->harga_per_pcs = $report->assignment->product->harga_per_pcs;
+            }
+            $report->total_harga = $report->jumlah_barang_dikirim * $report->harga_per_pcs;
+        });
+
         static::created(function (Report $report) {
             $assignment = $report->assignment;
 
@@ -51,9 +68,56 @@ class Report extends Model
                 $assignment->update(['status' => 'in_progress']);
             }
 
-            // Update status ke done jika sudah mencapai target
-            if ($assignment->total_dikirim >= $assignment->qty_target) {
+            // Update status ke done jika sudah mencapai atau melebihi target
+            $totalDikirim = $assignment->reports()->sum('jumlah_barang_dikirim');
+            if ($totalDikirim >= $assignment->qty_target) {
                 $assignment->update(['status' => 'done']);
+                
+                // Auto-mark notifikasi sebagai read ketika assignment selesai
+                $karyawan = $assignment->assignedUser;
+                if ($karyawan) {
+                    $karyawan->unreadNotifications()
+                        ->where('data->assignment_id', $assignment->id)
+                        ->get()
+                        ->each(function ($notification) {
+                            $notification->markAsRead();
+                        });
+                }
+            }
+        });
+
+        static::updated(function (Report $report) {
+            $assignment = $report->assignment;
+
+            // Rekalkulasi total dikirim setelah report di-update
+            $totalDikirim = $assignment->reports()->sum('jumlah_barang_dikirim');
+            if ($totalDikirim >= $assignment->qty_target) {
+                $assignment->update(['status' => 'done']);
+                
+                // Auto-mark notifikasi sebagai read ketika assignment selesai
+                $karyawan = $assignment->assignedUser;
+                if ($karyawan) {
+                    $karyawan->unreadNotifications()
+                        ->where('data->assignment_id', $assignment->id)
+                        ->get()
+                        ->each(function ($notification) {
+                            $notification->markAsRead();
+                        });
+                }
+            } elseif ($assignment->status === 'done' && $totalDikirim < $assignment->qty_target) {
+                $assignment->update(['status' => 'in_progress']);
+            }
+        });
+
+        static::deleted(function (Report $report) {
+            $assignment = $report->assignment;
+
+            // Rekalkulasi total dikirim setelah report dihapus
+            $totalDikirim = $assignment->reports()->sum('jumlah_barang_dikirim');
+            if ($totalDikirim < $assignment->qty_target && $assignment->status === 'done') {
+                $assignment->update(['status' => 'in_progress']);
+            } elseif ($totalDikirim == 0 && $assignment->status === 'in_progress') {
+                $assignment->update(['status' => 'pending']);
             }
         });
     }

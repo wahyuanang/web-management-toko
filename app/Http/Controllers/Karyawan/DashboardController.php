@@ -17,7 +17,9 @@ class DashboardController extends Controller
         $totalAssignments = Assignment::where('assigned_to', $userId)->count();
         $totalReports = Report::where('user_id', $userId)->count();
 
+        // Filter: hanya tampilkan assignment yang belum selesai (status != 'done')
         $recentAssignments = Assignment::where('assigned_to', $userId)
+            ->where('status', '!=', 'done')
             ->latest()
             ->take(5)
             ->get();

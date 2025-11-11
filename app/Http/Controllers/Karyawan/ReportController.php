@@ -39,7 +39,9 @@ class ReportController extends Controller
     public function create()
     {
         // Ambil assignments yang ditugaskan ke user login
+        // Filter: hanya tampilkan assignment yang belum selesai (status != 'done')
         $assignments = Assignment::where('assigned_to', Auth::id())
+            ->where('status', '!=', 'done')
             ->orderBy('title')
             ->get();
 
@@ -100,7 +102,13 @@ class ReportController extends Controller
             abort(403, 'Akses tidak diizinkan.');
         }
 
+        // Filter: hanya tampilkan assignment yang belum selesai (status != 'done')
+        // ATAU assignment yang sedang di-edit (untuk mempertahankan pilihan existing)
         $assignments = Assignment::where('assigned_to', Auth::id())
+            ->where(function($query) use ($report) {
+                $query->where('status', '!=', 'done')
+                      ->orWhere('id', $report->assignment_id);
+            })
             ->orderBy('title')
             ->get();
 

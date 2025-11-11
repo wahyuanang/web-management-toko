@@ -13,6 +13,28 @@
         </a>
     </div>
 
+    @if($assignments->count() == 0)
+        <!-- No Active Assignments Alert -->
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-lg">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-yellow-400 text-2xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-medium text-yellow-800">Tidak Ada Tugas Aktif</h3>
+                    <p class="mt-2 text-yellow-700">
+                        Saat ini tidak ada tugas yang dapat dilaporkan. Semua tugas yang ditugaskan kepada Anda sudah selesai diantar.
+                    </p>
+                    <div class="mt-4">
+                        <a href="{{ route('karyawan.assignments.index') }}" 
+                           class="inline-flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium transition-colors">
+                            <i class="fas fa-clipboard-list mr-2"></i>Lihat Daftar Tugas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @else
     <!-- Form -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
@@ -40,6 +62,9 @@
                         </option>
                     @endforeach
                 </select>
+                <p class="mt-1 text-xs text-gray-500">
+                    <i class="fas fa-info-circle"></i> Hanya menampilkan tugas yang belum selesai diantar
+                </p>
                 @error('assignment_id')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -186,18 +211,43 @@
             </div>
         </form>
     </div>
+    @endif
 </div>
 
 @push('scripts')
 <script>
-    // Auto-fill jumlah barang dikirim based on selected assignment
-    document.getElementById('assignment_id').addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const qtyTarget = selectedOption.getAttribute('data-qty');
-        if (qtyTarget) {
-            document.getElementById('jumlah_barang_dikirim').value = qtyTarget;
-        }
-    });
+    // Auto-fill data based on selected assignment
+    const assignmentSelect = document.getElementById('assignment_id');
+    
+    if (assignmentSelect) {
+        assignmentSelect.addEventListener('change', function() {
+            const assignmentId = this.value;
+            
+            if (!assignmentId) {
+                document.getElementById('jumlah_barang_dikirim').value = '';
+                document.getElementById('lokasi').value = '';
+                return;
+            }
+
+            // Fetch assignment details via API
+            fetch(`/karyawan/api/assignments/${assignmentId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Auto-fill jumlah barang
+                        document.getElementById('jumlah_barang_dikirim').value = data.data.qty_target;
+                        
+                        // Auto-fill lokasi tujuan
+                        if (data.data.lokasi_tujuan) {
+                            document.getElementById('lokasi').value = data.data.lokasi_tujuan;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching assignment details:', error);
+                });
+        });
+    }
 
     // Preview image
     function previewImage(input, previewId) {

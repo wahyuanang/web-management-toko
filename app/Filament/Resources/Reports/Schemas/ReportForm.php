@@ -29,10 +29,11 @@ class ReportForm
                 ->required()
                 ->reactive()
                 ->afterStateUpdated(function (callable $set, $state) {
-                    // otomatis isi jumlah_barang_dikirim berdasarkan assignment
+                    // otomatis isi jumlah_barang_dikirim dan lokasi berdasarkan assignment
                     $assignment = Assignment::find($state);
                     if ($assignment) {
                         $set('jumlah_barang_dikirim', $assignment->qty_target);
+                        $set('lokasi', $assignment->lokasi_tujuan ?? '');
                     }
                 }),
 

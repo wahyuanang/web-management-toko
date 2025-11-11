@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Notifications;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
+use App\Models\Assignment;
+
+class NewAssignmentNotification extends Notification
+{
+    use Queueable;
+
+    public $assignment;
+
+    /**
+     * Create a new notification instance.
+     */
+    public function __construct(Assignment $assignment)
+    {
+        $this->assignment = $assignment;
+    }
+
+    /**
+     * Get the notification's delivery channels.
+     *
+     * @return array<int, string>
+     */
+    public function via(object $notifiable): array
+    {
+        return ['database'];
+    }
+
+    /**
+     * Get the array representation of the notification.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(object $notifiable): array
+    {
+        return [
+            'assignment_id' => $this->assignment->id,
+            'title' => $this->assignment->title,
+            'description' => $this->assignment->description,
+            'qty_target' => $this->assignment->qty_target,
+            'priority' => $this->assignment->priority,
+            'deadline' => $this->assignment->deadline?->format('Y-m-d'),
+            'message' => 'Anda mendapat tugas baru: ' . $this->assignment->title,
+        ];
+    }
+}

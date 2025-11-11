@@ -41,6 +41,9 @@
                         </option>
                     @endforeach
                 </select>
+                <p class="mt-1 text-xs text-gray-500">
+                    <i class="fas fa-info-circle"></i> Hanya menampilkan tugas yang belum selesai diantar
+                </p>
                 @error('assignment_id')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror

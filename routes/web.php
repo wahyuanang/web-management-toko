@@ -48,4 +48,7 @@ Route::middleware(['auth', 'role:karyawan'])->prefix('karyawan')->name('karyawan
 
     // Reports - Full CRUD
     Route::resource('reports', ReportController::class);
+
+    // API untuk get assignment details
+    Route::get('/api/assignments/{id}', [\App\Http\Controllers\Api\AssignmentController::class, 'show'])->name('api.assignments.show');
 });
