@@ -2,16 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Report extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'assignment_id',
         'user_id',
+        'assignment_id',
         'jumlah_barang_dikirim',
         'lokasi',
         'catatan',
@@ -25,18 +23,38 @@ class Report extends Model
     ];
 
     /**
-     * Relasi ke Assignment
+     * Report belongs to User (karyawan)
      */
-    public function assignment()
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Report belongs to Assignment
+     */
+    public function assignment(): BelongsTo
     {
         return $this->belongsTo(Assignment::class);
     }
 
     /**
-     * Relasi ke User
+     * Boot method to auto update assignment status
      */
-    public function user()
+    protected static function booted(): void
     {
-        return $this->belongsTo(User::class);
+        static::created(function (Report $report) {
+            $assignment = $report->assignment;
+
+            // Update status ke in_progress jika masih pending
+            if ($assignment->status === 'pending') {
+                $assignment->update(['status' => 'in_progress']);
+            }
+
+            // Update status ke done jika sudah mencapai target
+            if ($assignment->total_dikirim >= $assignment->qty_target) {
+                $assignment->update(['status' => 'done']);
+            }
+        });
     }
 }

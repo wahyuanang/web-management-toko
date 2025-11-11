@@ -5,12 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 use App\Models\Assignment;
 use App\Models\Report;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
         'name',
@@ -49,5 +50,21 @@ class User extends Authenticatable
     public function reports()
     {
         return $this->hasMany(Report::class);
+    }
+
+    /**
+     * Check if user is admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    /**
+     * Check if user is karyawan
+     */
+    public function isKaryawan(): bool
+    {
+        return $this->hasRole('karyawan');
     }
 }
