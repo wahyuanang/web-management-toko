@@ -36,7 +36,7 @@
 
         <div class="border-t border-blue-700 my-4"></div>
 
-        <form method="POST" action="{{ route('filament.admin.auth.logout') }}">
+        <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit"
                 class="w-full flex items-center px-4 py-3 mb-2 rounded-lg text-blue-100 hover:bg-red-600 transition-colors">

@@ -8,43 +8,46 @@
         <!-- Notifications -->
         @php
             // Filter: hanya tampilkan notifikasi untuk assignment yang belum selesai
-            $activeNotifications = auth()->user()->unreadNotifications->filter(function($notification) {
-                if (isset($notification->data['assignment_id'])) {
-                    $assignment = \App\Models\Assignment::find($notification->data['assignment_id']);
-                    return $assignment && $assignment->status !== 'done';
-                }
-                return true;
-            });
+            $activeNotifications = auth()
+                ->user()
+                ->unreadNotifications->filter(function ($notification) {
+                    if (isset($notification->data['assignment_id'])) {
+                        $assignment = \App\Models\Assignment::find($notification->data['assignment_id']);
+                        return $assignment && $assignment->status !== 'done';
+                    }
+                    return true;
+                });
         @endphp
 
-        @if($activeNotifications->count() > 0)
-        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg">
-            <div class="flex items-start">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-bell text-blue-400"></i>
-                </div>
-                <div class="ml-3 flex-1">
-                    <h3 class="text-sm font-medium text-blue-800">
-                        Anda memiliki {{ $activeNotifications->count() }} notifikasi baru
-                    </h3>
-                    <div class="mt-2 space-y-2">
-                        @foreach($activeNotifications->take(5) as $notification)
-                            <div class="text-sm text-blue-700 bg-white p-3 rounded">
-                                <p class="font-medium">{{ $notification->data['message'] ?? 'Notifikasi baru' }}</p>
-                                @if(isset($notification->data['assignment_id']))
-                                <a href="{{ route('karyawan.assignments.show', $notification->data['assignment_id']) }}"
-                                   class="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center mt-1">
-                                    Lihat Detail <i class="fas fa-arrow-right ml-1 text-xs"></i>
-                                </a>
-                                @endif
-                                <p class="text-xs text-gray-500 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
-                            </div>
-                        @endforeach
+        @if ($activeNotifications->count() > 0)
+            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-bell text-blue-400"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <h3 class="text-sm font-medium text-blue-800">
+                            Anda memiliki {{ $activeNotifications->count() }} notifikasi baru
+                        </h3>
+                        <div class="mt-2 space-y-2">
+                            @foreach ($activeNotifications->take(5) as $notification)
+                                <div class="text-sm text-blue-700 bg-white p-3 rounded">
+                                    <p class="font-medium">{{ $notification->data['message'] ?? 'Notifikasi baru' }}</p>
+                                    @if (isset($notification->data['assignment_id']))
+                                        <a href="{{ route('karyawan.assignments.show', $notification->data['assignment_id']) }}"
+                                            class="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center mt-1">
+                                            Lihat Detail <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                                        </a>
+                                    @endif
+                                    <p class="text-xs text-gray-500 mt-1">{{ $notification->created_at->diffForHumans() }}
+                                    </p>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        @endif        <!-- Stats Cards -->
+        @endif <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
             <!-- Total Tugas -->
             <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">

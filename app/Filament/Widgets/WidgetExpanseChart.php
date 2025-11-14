@@ -3,22 +3,47 @@
 namespace App\Filament\Widgets;
 
 use Filament\Widgets\ChartWidget;
+use App\Models\Report;
+use Flowframe\Trend\Trend;
+use Flowframe\Trend\TrendValue;
+
 
 class WidgetExpanseChart extends ChartWidget
 {
-    protected ?string $heading = 'Pengeluaran';
-    protected string $color = 'danger';
+    protected ?string $heading = 'Penjualan Barang per Hari';
 
     protected function getData(): array
     {
+        // Ambil filter dari Dashboard
+        $startDate = $this->filters['startDate'] ?? now()->startOfMonth();
+        $endDate = $this->filters['endDate'] ?? now()->endOfMonth();
+
+        // Ambil data penjualan barang per hari dari reports yang assignment-nya done
+        $data = Trend::query(
+            Report::query()
+                ->whereHas('assignment', function($query) {
+                    $query->where('status', 'done');
+                })
+        )
+        ->between(
+            start: $startDate,
+            end: $endDate,
+        )
+        ->perDay()
+        ->dateColumn('waktu_laporan')
+        ->sum('jumlah_barang_dikirim');
+
         return [
             'datasets' => [
                 [
-                    'label' => 'Blog posts created',
-                    'data' => [0, 10, 5, 2, 21, 32, 45, 74, 65, 45, 77, 89],
+                    'label' => 'Jumlah Barang Terjual',
+                    'data' => $data->map(fn (TrendValue $value) => $value->aggregate),
+                    'borderColor' => '#0BA6DF',
+                    'backgroundColor' => 'rgba(140, 228, 255, 0.2)',
+                    'fill' => true,
                 ],
             ],
-            'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            'labels' => $data->map(fn (TrendValue $value) => date('d M', strtotime($value->date))),
         ];
     }
 

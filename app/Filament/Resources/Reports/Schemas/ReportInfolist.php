@@ -30,10 +30,26 @@ class ReportInfolist
                 ->columnSpanFull(),
 
             ImageEntry::make('foto_bukti')
-                ->label('Foto Bukti'),
+                ->label('Foto Bukti')
+                ->disk('public')
+                ->width('100%')
+                ->extraImgAttributes([
+                    'style' => 'max-width: 100%; height: auto; min-width: 300px; object-fit: contain;',
+                    'class' => 'rounded-lg shadow-lg'
+                ])
+                ->openUrlInNewTab()
+                ->visibility('public'),
 
             ImageEntry::make('foto_bukti_2')
                 ->label('Foto Bukti 2')
+                ->disk('public')
+                ->width('100%')
+                ->extraImgAttributes([
+                    'style' => 'max-width: 100%; height: auto; min-width: 300px; object-fit: contain;',
+                    'class' => 'rounded-lg shadow-lg'
+                ])
+                ->openUrlInNewTab()
+                ->visibility('public')
                 ->placeholder('Tidak ada'),
 
             TextEntry::make('waktu_laporan')

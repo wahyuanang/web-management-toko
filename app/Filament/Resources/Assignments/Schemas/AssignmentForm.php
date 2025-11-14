@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Assignments\Schemas;
 
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -44,18 +43,17 @@ class AssignmentForm
                     ->required()
                     ->helperText('Pilih karyawan yang akan menerima tugas ini'),
 
-                // Ambil product dari tabel products dengan info stok
+                // Ambil product dari tabel products
                 Select::make('product_id')
                     ->label('Product')
                     ->options(function () {
-                        return Product::all()->mapWithKeys(function ($product) {
-                            return [$product->id => $product->nama_barang . ' (Stok: ' . $product->stok . ' ' . $product->satuan . ')'];
-                        });
+                        return Product::all()->pluck('nama_barang', 'id');
                     })
                     ->searchable()
                     ->required()
                     ->reactive()
                     ->afterStateUpdated(function ($state, callable $set) {
+
                         // Reset qty_target ketika product berubah
                         $set('qty_target', null);
                     })
@@ -65,30 +63,10 @@ class AssignmentForm
                     ->label('Qty Target')
                     ->numeric()
                     ->required()
-                    ->reactive()
-                    ->rules([
-                        function ($get) {
-                            return function (string $attribute, $value, \Closure $fail) use ($get) {
-                                $productId = $get('product_id');
-                                if ($productId) {
-                                    $product = Product::find($productId);
-                                    if ($product && $value > $product->stok) {
-                                        $fail("Stok barang ini hanya {$product->stok} {$product->satuan}. Tidak dapat melebihi jumlah stok.");
-                                    }
-                                }
-                            };
-                        },
-                    ])
-                    ->helperText(function ($get) {
-                        $productId = $get('product_id');
-                        if ($productId) {
-                            $product = Product::find($productId);
-                            if ($product) {
-                                return "Stok tersedia: {$product->stok} {$product->satuan}";
-                            }
-                        }
-                        return 'Pilih produk terlebih dahulu';
-                    }),
+                    ->minValue(1)
+                    ->helperText('Masukkan jumlah target pengiriman untuk karyawan'),
+
+                // Komentar: Validasi stok telah dihapus agar admin bebas menginput qty_target
 
                 Select::make('priority')
                     ->label('Priority')

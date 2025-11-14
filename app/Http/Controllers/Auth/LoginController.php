@@ -31,14 +31,24 @@ class LoginController extends Controller
         $remember = $request->filled('remember');
 
         if (Auth::attempt($credentials, $remember)) {
+            $user = Auth::user();
+
+            // Check if user status is inactive
+            if ($user->status === 'inactive') {
+                Auth::logout();
+                throw ValidationException::withMessages([
+                    'email' => ['Akun Anda belum diaktifkan. Silakan hubungi admin untuk aktivasi akun.'],
+                ]);
+            }
+
             $request->session()->regenerate();
 
             // Redirect based on role
-            if (Auth::user()->hasRole('admin')) {
+            if ($user->hasRole('admin')) {
                 return redirect()->intended('/admin');
             }
 
-            if (Auth::user()->hasRole('karyawan')) {
+            if ($user->hasRole('karyawan')) {
                 return redirect()->intended(route('karyawan.dashboard'));
             }
 

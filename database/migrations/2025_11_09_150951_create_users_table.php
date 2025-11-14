@@ -21,7 +21,7 @@ return new class extends Migration
             $table->enum('role', ['admin', 'karyawan'])->default('karyawan');
             $table->string('phone')->nullable();
             $table->text('address')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->timestamps();
         });
     }

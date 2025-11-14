@@ -21,18 +21,16 @@ class ProductForm
 
                 TextInput::make('kode_barang')
                     ->label('Kode Barang')
-                    ->required()
                     ->unique(ignoreRecord: true)
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->helperText('Opsional - Kosongkan jika tidak ada kode barang'),
 
                 Select::make('kategori')
                     ->label('Kategori')
                     ->options([
-                        'Makanan' => 'Makanan',
-                        'Minuman' => 'Minuman',
-                        'Elektronik' => 'Elektronik',
-                        'Pakaian' => 'Pakaian',
-                        'Lainnya' => 'Lainnya',
+                        'Tempe' => 'Tempe',
+                        'Tahu' => 'Tahu',
+                        'Toge' => 'Toge',
                     ])
                     ->required(),
 
@@ -40,13 +38,13 @@ class ProductForm
                     ->label('Stok')
                     ->numeric()
                     ->default(0)
-                    ->required(),
+                    ->helperText('Opsional - Untuk tracking stok saja, tidak mempengaruhi assignment'),
 
                 TextInput::make('stok_minimum')
                     ->label('Stok Minimum')
                     ->numeric()
                     ->default(0)
-                    ->required(),
+                    ->helperText('Opsional - Untuk peringatan stok rendah'),
 
                 TextInput::make('satuan')
                     ->label('Satuan')

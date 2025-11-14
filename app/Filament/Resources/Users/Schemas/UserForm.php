@@ -23,7 +23,10 @@ class UserForm
                 DateTimePicker::make('email_verified_at'),
                 TextInput::make('password')
                     ->password()
-                    ->required(),
+                    ->dehydrated(fn($state) => filled($state))
+                    ->required(fn(string $operation): bool => $operation === 'create')
+                    ->maxLength(255)
+                    ->helperText('Kosongkan jika tidak ingin mengubah password'),
                 Select::make('role')
                     ->options(['admin' => 'Admin', 'karyawan' => 'Karyawan'])
                     ->default('karyawan')

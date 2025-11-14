@@ -53,6 +53,8 @@ class ReportController extends Controller
         $validated = $request->validate([
             'assignment_id' => 'required|exists:assignments,id',
             'jumlah_barang_dikirim' => 'required|integer|min:1',
+            'harga_per_pcs' => 'required|numeric|min:0',
+            'total_harga' => 'required|numeric|min:0',
             'lokasi' => 'required|string|max:1000',
             'catatan' => 'nullable|string|max:2000',
             'foto_bukti' => 'required|image|mimes:jpeg,png,jpg|max:2048',
@@ -105,9 +107,9 @@ class ReportController extends Controller
         // Filter: hanya tampilkan assignment yang belum selesai (status != 'done')
         // ATAU assignment yang sedang di-edit (untuk mempertahankan pilihan existing)
         $assignments = Assignment::where('assigned_to', Auth::id())
-            ->where(function($query) use ($report) {
+            ->where(function ($query) use ($report) {
                 $query->where('status', '!=', 'done')
-                      ->orWhere('id', $report->assignment_id);
+                    ->orWhere('id', $report->assignment_id);
             })
             ->orderBy('title')
             ->get();
@@ -125,6 +127,8 @@ class ReportController extends Controller
         $validated = $request->validate([
             'assignment_id' => 'required|exists:assignments,id',
             'jumlah_barang_dikirim' => 'required|integer|min:1',
+            'harga_per_pcs' => 'required|numeric|min:0',
+            'total_harga' => 'required|numeric|min:0',
             'lokasi' => 'required|string|max:1000',
             'catatan' => 'nullable|string|max:2000',
             'foto_bukti' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -180,5 +184,36 @@ class ReportController extends Controller
 
         return redirect()->route('karyawan.reports.index')
             ->with('success', 'Laporan berhasil dihapus!');
+    }
+
+    /**
+     * API: Get assignment details for auto-fill
+     */
+    public function getAssignmentDetails($id)
+    {
+        $assignment = Assignment::with('product')->find($id);
+
+        if (!$assignment || $assignment->assigned_to !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Assignment tidak ditemukan atau tidak valid.'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $assignment->id,
+                'title' => $assignment->title,
+                'qty_target' => $assignment->qty_target,
+                'lokasi_tujuan' => $assignment->lokasi_tujuan,
+                'product' => $assignment->product ? [
+                    'id' => $assignment->product->id,
+                    'nama_barang' => $assignment->product->nama_barang,
+                    'harga_per_pcs' => $assignment->product->harga_per_pcs,
+                    'satuan' => $assignment->product->satuan,
+                ] : null
+            ]
+        ]);
     }
 }

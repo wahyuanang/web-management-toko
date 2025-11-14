@@ -20,7 +20,7 @@ class ReportsTable
                 ->label('Tugas')
                 ->sortable()
                 ->searchable()
-                ->description(fn ($record) => 'Status: ' . ucfirst($record->assignment->status)),
+                ->description(fn($record) => 'Status: ' . ucfirst($record->assignment->status)),
 
             TextColumn::make('user.name')
                 ->label('Karyawan')
@@ -33,7 +33,7 @@ class ReportsTable
                 ->label('Jumlah Dikirim')
                 ->badge()
                 ->color('success')
-                ->formatStateUsing(fn ($state) => $state . ' unit'),
+                ->formatStateUsing(fn($state) => $state . ' unit'),
 
             TextColumn::make('harga_per_pcs')
                 ->label('Harga/Pcs')
@@ -54,7 +54,7 @@ class ReportsTable
                 ->label('Status Tugas')
                 ->badge()
                 ->color(function ($state) {
-                    return match($state) {
+                    return match ($state) {
                         'done' => 'success',
                         'in_progress' => 'warning',
                         'pending' => 'gray',
@@ -62,20 +62,30 @@ class ReportsTable
                         default => 'gray',
                     };
                 })
-                ->formatStateUsing(fn ($state) => ucfirst(str_replace('_', ' ', $state))),
+                ->formatStateUsing(fn($state) => ucfirst(str_replace('_', ' ', $state))),
 
             TextColumn::make('lokasi')
                 ->label('Lokasi')
                 ->limit(30)
-                ->tooltip(fn ($record) => $record->lokasi),
+                ->tooltip(fn($record) => $record->lokasi),
 
             ImageColumn::make('foto_bukti')
                 ->label('Bukti 1')
-                ->disk('public'),
+                ->disk('public')
+                ->width(70)
+                ->height(70)
+                ->circular(true)
+                ->openUrlInNewTab()
+                ->visibility('public'),
 
             ImageColumn::make('foto_bukti_2')
                 ->label('Bukti 2')
-                ->disk('public'),
+                ->disk('public')
+                ->width(70)
+                ->height(70)
+                ->circular(true)
+                ->openUrlInNewTab()
+                ->visibility('public'),
 
             TextColumn::make('waktu_laporan')
                 ->label('Waktu Laporan')
