@@ -16,12 +16,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'admin',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password'),
+        // Seed roles first
+        $this->call([
+            RoleSeeder::class,
         ]);
+
+        // Create admin user
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'admin',
+                'password' => Hash::make('password'),
+            ]
+        );
+
+        // Assign admin role if not already assigned
+        if (!$admin->hasRole('admin')) {
+            $admin->assignRole('admin');
+        }
     }
 }

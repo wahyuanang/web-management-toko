@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
-use App\Models\User;
 
 class RoleSeeder extends Seeder
 {
@@ -17,13 +16,7 @@ class RoleSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Create roles
-        Role::firstOrCreate(['name' => 'admin']);
-        Role::firstOrCreate(['name' => 'karyawan']);
-
-        // Assign first user as admin (optional)
-        $firstUser = User::first();
-        if ($firstUser && !$firstUser->hasAnyRole(['admin', 'karyawan'])) {
-            $firstUser->assignRole('admin');
-        }
+        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'karyawan', 'guard_name' => 'web']);
     }
 }
